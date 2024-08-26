@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漫画・コミック発売日カレンダー</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js'></script>
+    <style>
+        /* ページ全体の背景色を変更 */
+        body {
+            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        /* カレンダーのイベント内でのテキストの自動改行を有効にする */
+        .fc-event-title {
+            white-space: normal;
+            word-wrap: break-word;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* イベントホバー時のスタイル */
+        .fc-event:hover {
+            background-color: #ff7f50; /* 背景色を変更 */
+            cursor: pointer; /* カーソルをポインタに変更 */
+        }
+
+        /* カレンダー枠のレスポンシブ対応 */
+        #calendar {
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        /* 見出しのスタイル */
+        h1 {
+            text-align: center;
+            color: #4682b4;
+            font-family: 'Verdana', sans-serif;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>漫画・コミック発売日カレンダー</h1>
+    <div id='calendar'></div>
+
+    <script>
+        const apiKey = 'AIzaSyAjbUyi0GbpSfuo58J-fmpcWAQaPRm-ggQ';
+        const query = 'manga+OR+comic';  // クエリを「manga」と「comic」に限定
+        const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`;
+
+        async function fetchMangaAndComicData() {
+            let allItems = [];
+            let startIndex = 0;
+            const maxResults = 40;  // 最大取得件数を増やす
+
+            while (true) {
+                const response = await fetch(`${url}&startIndex=${startIndex}&maxResults=${maxResults}`);
+                const data = await response.json();
+                if (data.items) {
+                    allItems = allItems.concat(data.items);
+                    startIndex += maxResults;
+                    if (data.items.length < maxResults) break;  // これ以上アイテムがない場合終了
+                } else {
+                    break;
+                }
+            }
+
+            return allItems.map(item => {
+                let date = item.volumeInfo.publishedDate;
+
+                // 日付が「年」のみの場合に「-01-01」を補完
+                if (date && date.length === 4) {
+                    date += '-01-01';
+                }
+
+                return {
+                    title: item.volumeInfo.title,
+                    start: date,
+                    searchUrl: `https://www.google.com/search?q=${encodeURIComponent(item.volumeInfo.title)}`
+                };
+            }).filter(item => item.start);
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const calendarEl = document.getElementById('calendar');
+            const mangaAndComicData = await fetchMangaAndComicData();
+
+            const events = mangaAndComicData.map(item => ({
+                title: item.title,
+                start: item.start,
+                url: item.searchUrl
+            }));
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: events,
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault(); // リンクのデフォルト動作を無効化
+                    const searchUrl = info.event.url;
+                    window.open(searchUrl, '_blank'); // Google検索を新しいタブで開く
+                },
+                // 前月と翌月の日付を非表示にする設定
+                showNonCurrentDates: false,
+                locale: 'ja', // 日本語に設定
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+</body>
+</html>
