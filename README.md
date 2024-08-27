@@ -22,7 +22,7 @@ http://gsacademy-ko.sakura.ne.jp/WebAPI/apis/apis/google_books.html
 - カレンダーの日付ごとに発売される漫画のタイトルを掲載するのはもちろんだが、タイトルを押下したらホバーアクションからGoogle検索に遷移されるようユーザビリティ面での工夫をした。
 
 ## ⑥難しかった点・次回トライしたいこと(又は機能)
--  GoogleBooksAPIの活用は想定通りできたが、やはり取得タイトル数が少ないので、AmazoのAmazon Product Advertising APIや各出版社のサイトをScrapingして
+-  GoogleBooksAPIの活用は想定通りできたが、やはり取得タイトル数が少ないので、AmazonのAmazon Product Advertising APIや各出版社のサイトをScrapingして
   より掲載タイトル数を増やしリッチなコンテンツにしたい。
 
 
